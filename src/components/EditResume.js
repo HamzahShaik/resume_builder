@@ -7,6 +7,7 @@ function EditResume() {
   const [email, setEmail] = useState("");
   const [address, setAddress] = useState("");
   const [phone, setPhone] = useState("");
+  const [phoneValid, setPhoneValid] = useState(true);
   const [profile, setProfile] = useState("");
   const [experience, setExperience] = useState([
     { company: "", year: "", designation: "" },
@@ -31,7 +32,10 @@ function EditResume() {
   };
 
   const handlePhoneChange = (e) => {
-    setPhone(e.target.value);
+    const value = e.target.value;
+    const sanitizedValue = value.replace(/[^0-9+-.\s]/g, "");
+    setPhone(sanitizedValue);
+    setPhoneValid(value === sanitizedValue);
   };
 
   const handleProfileChange = (e) => {
@@ -107,6 +111,23 @@ function EditResume() {
       updatedEducation.splice(index, 1);
       return updatedEducation;
     });
+  };
+
+  const handleYearChange = (sectionIndex, index, field, value) => {
+    const section = sectionIndex === 0 ? "experience" : "education";
+    const updatedSection = [
+      ...(section === "experience" ? experience : education),
+    ];
+
+    // Remove all characters except numbers, -, and space
+    const sanitizedValue = value.replace(/[^0-9\s-]/g, "");
+    updatedSection[index][field] = sanitizedValue;
+
+    if (section === "experience") {
+      setExperience(updatedSection);
+    } else {
+      setEducation(updatedSection);
+    }
   };
 
   const availableSkills = [
@@ -185,6 +206,11 @@ function EditResume() {
                     onChange={handlePhoneChange}
                     required
                   />
+                  {!phoneValid && (
+                    <span className="text-danger">
+                      Please enter only numbers
+                    </span>
+                  )}
                 </div>
               </div>
               <div className="row mb-3">
@@ -221,7 +247,7 @@ function EditResume() {
                       className="form-control"
                       value={exp.year}
                       onChange={(e) =>
-                        handleExperienceChange(index, "year", e.target.value)
+                        handleYearChange(0, index, "year", e.target.value)
                       }
                       placeholder="Year"
                       required
@@ -289,7 +315,7 @@ function EditResume() {
                       className="form-control"
                       value={edu.year}
                       onChange={(e) =>
-                        handleEducationChange(index, "year", e.target.value)
+                        handleYearChange(1, index, "year", e.target.value)
                       }
                       placeholder="Year"
                       required
